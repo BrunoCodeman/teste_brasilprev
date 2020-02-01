@@ -1,4 +1,5 @@
 import numpy as np
+from typing import List
 from random import randint, shuffle
 from models import Jogador, Propriedade, PERSONALIDADES
 
@@ -89,7 +90,7 @@ def rolar_dado() -> int:
     return randint(1, 6)
 
 
-async def criar_jogadores() -> list:
+async def criar_jogadores() -> List[Jogador]:
     """
     Cria 4 jogadores para uma nova partida
 
@@ -104,7 +105,7 @@ async def criar_jogadores() -> list:
     return jogadores
 
 
-async def criar_propriedades() -> list:
+async def criar_propriedades() -> List[Propriedade]:
     """
     Cria 20 propriedades para uma nova partida
 
