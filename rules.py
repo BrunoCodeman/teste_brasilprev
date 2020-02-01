@@ -1,10 +1,23 @@
 import numpy as np
 from typing import List
-from random import randint, shuffle
+from random import randint, shuffle, choice
 from models import Jogador, Propriedade, PERSONALIDADES
 
 
-async def turno(jogador: Jogador, propriedades: list):
+def ordenar_por_saldo(jogadores: List[Jogador]) -> List[Jogador]:
+    """
+    Ordena a lista de jogadores por valor de saldo
+
+    Params:
+    - jogadores: A lista de jogadores do jogo atual
+
+    Returns:
+    A mesma lista, ordenada por valor de saldo, do maior para o menor
+    """
+    return sorted(jogadores, key=lambda x: x.saldo, reverse=True)
+    
+
+def turno(jogador: Jogador, propriedades: List[Propriedade]):
     """
     Executa o turno de um jogador. Rola o dado, anda o
     número de casas necessárias, compra um imóvel ou
@@ -18,8 +31,12 @@ async def turno(jogador: Jogador, propriedades: list):
         numero_dado = rolar_dado()
         andar_casas(jogador, numero_dado)
         propriedade = propriedades[jogador.posicao]
-        await comprar_propriedade(jogador, propriedade)
-        await pagar_aluguel(jogador, propriedade)
+        comprar_propriedade(jogador, propriedade)
+        pagar_aluguel(jogador, propriedade)
+    else:
+        for p in jogador.propriedades:
+            p.dono = None 
+        jogador.propriedades = []
 
 
 def atualizar_saldo_fim_tabuleiro(jogador: Jogador) -> Jogador:
@@ -115,13 +132,13 @@ async def criar_propriedades() -> List[Propriedade]:
     propriedades = []
     for i in range(0, 20):
         valor = randint(0, 300)
-        aluguel = randint(0, valor -1)
-        propriedades.append(Propriedade(
-            valor_aluguel=aluguel, valor_compra=valor))
+        aluguel = randint(0, valor - 1)
+        prop = Propriedade(valor_aluguel=aluguel, valor_compra=valor)
+        propriedades.append(prop)
     return propriedades
 
 
-async def pagar_aluguel(jogador: Jogador, propriedade: Propriedade)-> Jogador:
+def pagar_aluguel(jogador: Jogador, propriedade: Propriedade)-> Jogador:
     """
     Cobra o aluguel de uma propriedade quando um jogador passa por ela
     Params:
@@ -131,7 +148,7 @@ async def pagar_aluguel(jogador: Jogador, propriedade: Propriedade)-> Jogador:
     Returns:
     - O jogador que pagou o aluguel, com seu saldo atualizado.
     """
-    if(propriedade.dono):
+    if(propriedade.dono != jogador and propriedade.dono is not None):
         saldo_inquilino = jogador.saldo - propriedade.valor_aluguel
         saldo_proprietario = propriedade.dono.saldo + propriedade.valor_aluguel
         jogador.saldo = saldo_inquilino
@@ -139,7 +156,7 @@ async def pagar_aluguel(jogador: Jogador, propriedade: Propriedade)-> Jogador:
     return jogador
 
 
-async def comprar_propriedade(jogador: Jogador, propriedade: Propriedade) -> (Jogador, Propriedade):
+def comprar_propriedade(jogador: Jogador, propriedade: Propriedade) -> (Jogador, Propriedade):
     """
     Efetua a venda da propriedade de acordo com o saldo e o perfil do jogador
     e caso a propriedade não tenha dono.
@@ -176,9 +193,9 @@ async def comprar_propriedade(jogador: Jogador, propriedade: Propriedade) -> (Jo
 
         if jogador.personalidade == "aleatório":
             np.random.seed(0)
-            choice = np.random.choice(np.arange(start=1, stop=11))
+            _choice = np.random.choice(11)
             print(f"random choice - {choice}")
-            if choice < 5:
+            if choice([0, 1]) == 1:
                 jogador.saldo = saldo_final_jogador
                 jogador.propriedades.append(propriedade)
                 propriedade.dono = jogador
