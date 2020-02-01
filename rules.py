@@ -1,4 +1,3 @@
-import numpy as np
 from typing import List
 from random import randint, shuffle, choice
 from models import Jogador, Propriedade, PERSONALIDADES
@@ -192,9 +191,6 @@ def comprar_propriedade(jogador: Jogador, propriedade: Propriedade) -> (Jogador,
                 propriedade.dono = jogador
 
         if jogador.personalidade == "aleatório":
-            np.random.seed(0)
-            _choice = np.random.choice(11)
-            print(f"random choice - {choice}")
             if choice([0, 1]) == 1:
                 jogador.saldo = saldo_final_jogador
                 jogador.propriedades.append(propriedade)
