@@ -12,8 +12,9 @@ class Jogador:
     saldo: float = 300
     propriedades: list = field(default_factory=list)
     posicao: int = 0
+
     def __str__(self):
-        return f"{self.personalidade}: {self.saldo}, {len(self.propriedades)} props"
+        return f"{self.personalidade}: {self.saldo}, {len(self.propriedades)} propriedades"
 
 
 @dataclass
@@ -24,3 +25,6 @@ class Propriedade:
     valor_compra: float
     valor_aluguel: float
     dono: Jogador = None
+
+    def __str__(self):
+        return "Dono: {self.dono}, compra: {self.valor_compra}, aluguel: {self.valor_aluguel}"

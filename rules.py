@@ -1,3 +1,4 @@
+import sys, os
 from typing import List
 from random import randint, shuffle, choice
 from models import Jogador, Propriedade, PERSONALIDADES
@@ -13,8 +14,10 @@ def ordenar_por_saldo(jogadores: List[Jogador]) -> List[Jogador]:
     Returns:
     A mesma lista, ordenada por valor de saldo, do maior para o menor
     """
-    return sorted(jogadores, key=lambda x: x.saldo, reverse=True)
+    jogadores.sort(key=lambda x: x.saldo, reverse=True)
     
+    return jogadores
+
 
 def turno(jogador: Jogador, propriedades: List[Propriedade]):
     """
@@ -33,11 +36,13 @@ def turno(jogador: Jogador, propriedades: List[Propriedade]):
         comprar_propriedade(jogador, propriedade)
         pagar_aluguel(jogador, propriedade)
     else:
-        for p in jogador.propriedades:
-            p.dono = None 
-        jogador.propriedades = []
-
-
+        if jogador.propriedades:
+            for p in jogador.propriedades:
+                p.dono = None 
+            jogador.propriedades = []
+    
+  
+    
 def atualizar_saldo_fim_tabuleiro(jogador: Jogador) -> Jogador:
     """
     Atualiza o saldo do jogador ao completar a volta no tabuleiro
@@ -64,14 +69,11 @@ def andar_casas(jogador: Jogador, casas: int) -> Jogador:
     O jogador com a posição atualizada
     """
     total = jogador.posicao + casas
-    if jogador.posicao == 0:
+    if total < 20:
         jogador.posicao = total
-    else:
-        if total < 20:
-            jogador.posicao = total
-        else:        
-            jogador.posicao = total-21
-            atualizar_saldo_fim_tabuleiro(jogador)
+    else:        
+        jogador.posicao = total-21
+        atualizar_saldo_fim_tabuleiro(jogador)
     return jogador
 
 
@@ -96,14 +98,15 @@ def vencedor(lista_jogadores: list) -> Jogador:
     return jogadores_no_pareo[0] if len(jogadores_no_pareo) == 1 else None
 
 
-def rolar_dado() -> int:
+def rolar_dado(tamanho_dado:int=6) -> int:
     """
     Rola o D6 para movimentação do jogador
-
+    Params:
+    - tamanho_dado: Tamanho do dado a ser rolado
     Returns:
-    - Um número entre 1 e 6 para que o jogador ande casas
+    Um número entre 1 e o tamanho do dado fornecido, para que o jogador ande casas
     """
-    return randint(1, 6)
+    return randint(1, tamanho_dado)
 
 
 async def criar_jogadores() -> List[Jogador]:
@@ -130,11 +133,12 @@ async def criar_propriedades() -> List[Propriedade]:
     """
     propriedades = []
     for i in range(0, 20):
-        valor = randint(0, 300)
-        aluguel = randint(0, valor - 1)
+        valor_maximo = 300
+        valor = randint(1, valor_maximo)
+        aluguel = randint(1, valor_maximo - 1)
         prop = Propriedade(valor_aluguel=aluguel, valor_compra=valor)
         propriedades.append(prop)
-    return propriedades
+    return propriedades    
 
 
 def pagar_aluguel(jogador: Jogador, propriedade: Propriedade)-> Jogador:
@@ -147,7 +151,8 @@ def pagar_aluguel(jogador: Jogador, propriedade: Propriedade)-> Jogador:
     Returns:
     - O jogador que pagou o aluguel, com seu saldo atualizado.
     """
-    if(propriedade.dono != jogador and propriedade.dono is not None):
+    propriedade_de_terceiro =  id(propriedade.dono) not in [id(None), id(jogador)]
+    if propriedade_de_terceiro:
         saldo_inquilino = jogador.saldo - propriedade.valor_aluguel
         saldo_proprietario = propriedade.dono.saldo + propriedade.valor_aluguel
         jogador.saldo = saldo_inquilino
